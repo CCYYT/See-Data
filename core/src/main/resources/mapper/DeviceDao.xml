@@ -1,0 +1,736 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.core.dao.DeviceDao">
+
+    <resultMap type="com.example.core.domain.Device" id="DeviceMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uuid" column="uuid" jdbcType="VARCHAR"/>
+        <result property="deviceName" column="device_name" jdbcType="VARCHAR"/>
+        <result property="deviceStatus" column="device_status" jdbcType="INTEGER"/>
+        <result property="deviceLongitude" column="device_longitude" jdbcType="NUMERIC"/>
+        <result property="deviceLatitude" column="device_latitude" jdbcType="NUMERIC"/>
+        <result property="areaId" column="area_id" jdbcType="INTEGER"/>
+        <result property="areaUuid" column="area_uuid" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="info" column="info" jdbcType="VARCHAR"/>
+    </resultMap>
+
+     <!--查询uuid是否存在-->
+     <select id="uuidIsExist" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 0
+            FROM s_device
+            WHERE uuid = #{uuid}
+        )
+    </select>
+
+    <!--查询单个-->
+    <select id="queryByUuid" resultMap="DeviceMap">
+        select
+          id, uuid, device_name, device_status, device_longitude, device_latitude, area_id, (select uuid from s_device where id = area_id) as area_uuid, create_time, info
+        from s_device
+        where uuid = #{uuid}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="DeviceMap">
+        select
+          id, uuid, device_name, device_status, device_longitude, device_latitude, area_id, (select uuid from s_area where id = area_id) as area_uuid, create_time, info
+        from s_device
+        <if test="pageInfo.fieldRule != null">
+        <where>
+            <foreach collection="pageInfo.fieldRule.entrySet()" item="fieldInfo" index="filedName">
+                <if test="fieldInfo.condition != null">
+                    <choose>
+                        <when test="filedName == 'id'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND id IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND id = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        id LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND id >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= id
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'uuid'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND uuid IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND uuid = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        uuid LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND uuid >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= uuid
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'deviceName'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND device_name IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND device_name = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        device_name LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND device_name >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= device_name
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'deviceStatus'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND device_status IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND device_status = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        device_status LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND device_status >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= device_status
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'deviceLongitude'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND device_longitude IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND device_longitude = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        device_longitude LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND device_longitude >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= device_longitude
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'deviceLatitude'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND device_latitude IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND device_latitude = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        device_latitude LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND device_latitude >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= device_latitude
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'areaId'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND area_id IN (select id form s_area where uuid in
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                    )
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND area_id = (select id form s_area where uuid =#{fieldInfo.condition.value[0]})
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        area_id IN (select id form s_area where uuid LIKE "%"#{value}"%")
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND area_id IN (select id form s_area where uuid >= #{fieldInfo.condition.value[0]})
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND area_id IN (select id form s_area where  #{fieldInfo.condition.value[0]} >= uuid)
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'createTime'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND create_time IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND create_time = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        create_time LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND create_time >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= create_time
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'info'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND info IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND info = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        info LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND info >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= info
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                    </choose>
+                </if>
+            </foreach>
+            </where>
+        </if>
+        <if test="pageInfo.sortList.size()>0">
+        ORDER BY
+            <foreach collection="pageInfo.sortList.entrySet()" item="sort" index="filedName" separator=",">
+            <choose>
+                <when test="filedName == 'id'">
+                    id ${sort}
+                </when>
+                <when test="filedName == 'uuid'">
+                    uuid ${sort}
+                </when>
+                <when test="filedName == 'deviceName'">
+                    device_name ${sort}
+                </when>
+                <when test="filedName == 'deviceStatus'">
+                    device_status ${sort}
+                </when>
+                <when test="filedName == 'deviceLongitude'">
+                    device_longitude ${sort}
+                </when>
+                <when test="filedName == 'deviceLatitude'">
+                    device_latitude ${sort}
+                </when>
+                <when test="filedName == 'areaId'">
+                    area_id ${sort}
+                </when>
+                <when test="filedName == 'createTime'">
+                    create_time ${sort}
+                </when>
+                <when test="filedName == 'info'">
+                    info ${sort}
+                </when>
+            </choose>
+            </foreach>
+        </if>
+        limit #{pageInfo.offset}, #{pageInfo.pageSize}
+    </select>
+
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from s_device
+        <if test="pageInfo.fieldRule != null">
+        <where>
+            <foreach collection="pageInfo.fieldRule.entrySet()" item="fieldInfo" index="filedName">
+                <if test="fieldInfo.condition != null">
+                    <choose>
+                        <when test="filedName == 'id'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND id IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND id = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        id LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND id >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= id
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'uuid'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND uuid IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND uuid = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        uuid LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND uuid >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= uuid
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'deviceName'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND device_name IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND device_name = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        device_name LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND device_name >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= device_name
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'deviceStatus'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND device_status IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND device_status = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        device_status LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND device_status >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= device_status
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'deviceLongitude'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND device_longitude IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND device_longitude = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        device_longitude LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND device_longitude >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= device_longitude
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'deviceLatitude'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND device_latitude IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND device_latitude = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        device_latitude LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND device_latitude >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= device_latitude
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'areaId'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND area_id IN (select id form s_area where uuid in
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                    )
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                    AND area_id = (select id form s_area where uuid =#{fieldInfo.condition.value[0]})
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        area_id IN (select id form s_area where uuid LIKE "%"#{value}"%")
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND area_id IN (select id form s_area where uuid >= #{fieldInfo.condition.value[0]})
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND area_id IN (select id form s_area where  #{fieldInfo.condition.value[0]} >= uuid)
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'createTime'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND create_time IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND create_time = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        create_time LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND create_time >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= create_time
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'info'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND info IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND info = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        info LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND info >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= info
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                    </choose>
+                </if>
+            </foreach>
+            </where>
+        </if>
+
+    </select>
+
+    <!--通过groupId  查询用户组中管理的所有设备-->
+    <select id="getDeviceListByGroupId" resultType="com.example.core.domain.Device">
+        SELECT d.id,
+               d.uuid,
+               d.device_name,
+               d.device_status,
+               d.device_longitude,
+               d.device_latitude,
+               d.area_id,
+               a.uuid AS area_uuid,
+               d.create_time,
+               d.info
+        FROM s_device d
+                 INNER JOIN s_area a ON d.area_id = a.id
+        WHERE a.group_id = #{groupId};
+    </select>
+    <!--验证设备 是否 属于 区域-->
+    <select id="validate" resultType="java.lang.Boolean">
+        SELECT EXISTS (
+                       SELECT 0
+                       FROM s_device
+                       WHERE uuid = #{deviceUuid}
+                        AND area_id = (select id from s_area where uuid = #{areaUuid})
+                   )
+    </select>
+
+<!--    &lt;!&ndash;验证多个设备 是否 属于 区域&ndash;&gt;  6-28 标记 将废除   -->
+<!--    <select id="validates" resultType="java.lang.Boolean">-->
+<!--        SELECT EXISTS (-->
+<!--                       SELECT 0-->
+<!--                       FROM s_device-->
+<!--                       WHERE uuid in-->
+<!--                       <foreach collection="devicesUuid" item="deviceUuid" open="(" close=")" separator=",">-->
+<!--                           #{deviceUuid}-->
+<!--                       </foreach>-->
+<!--                         AND area_id = (select id from s_area where uuid = #{areaUuid})-->
+<!--                   )-->
+<!--    </select>-->
+
+    <!--通过groupId  查询用户组中管理的所有设备和设备的数据类型-->
+    <select id="getDeviceAndDataTypeListByGroupId" resultType="com.example.core.domain.Device">
+        SELECT
+            d.id,
+            d.uuid,
+            d.device_name,
+            d.device_status,
+            d.device_longitude,
+            d.device_latitude,
+            d.area_id,
+            a.uuid AS area_uuid,
+            a.area_name,
+            dd.data_type_id,
+            d.create_time,
+            d.info,
+            dt.data_type,
+            dt.data_max,
+            dt.data_min,
+            dt.chart_sort,
+            dt.info AS data_type_info
+        FROM s_device d
+                 INNER JOIN s_area a ON d.area_id = a.id
+                 LEFT JOIN (SELECT DISTINCT device_id, data_type_id FROM s_device_data) dd ON d.id = dd.device_id
+                 INNER JOIN s_data_type dt ON dd.data_type_id = dt.id
+        WHERE a.group_id = #{groupId};
+    </select>
+    <!--查询可以收到设备UUID为 目标值 的用户UUID-->
+    <select id="getUserUuidByDeviceUuid" resultType="java.lang.String">
+        SELECT
+            u.uuid
+        FROM
+            s_user u
+                LEFT JOIN s_user_group ug ON ug.id = u.group_id
+                LEFT JOIN s_area a ON a.group_id = ug.id
+                LEFT JOIN s_device d ON d.area_id = a.id
+        WHERE d.uuid = #{deviceUuid}
+    </select>
+
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into s_device(uuid, device_name, device_status, device_longitude, device_latitude, area_id, info)
+        values (#{uuid}, #{deviceName}, #{deviceStatus}, #{deviceLongitude}, #{deviceLatitude}, (select id from s_area where uuid = #{areaUuid}), #{info})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into s_device(uuid, device_name, device_status, device_longitude, device_latitude, area_id, create_time, info)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.uuid}, #{entity.deviceName}, #{entity.deviceStatus}, #{entity.deviceLongitude}, #{entity.deviceLatitude}, #{entity.areaId}, #{entity.createTime}, #{entity.info})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into s_device(uuid, device_name, device_status, device_longitude, device_latitude, area_id, create_time, info)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.uuid}, #{entity.deviceName}, #{entity.deviceStatus}, #{entity.deviceLongitude}, #{entity.deviceLatitude}, #{entity.areaId}, #{entity.createTime}, #{entity.info})
+        </foreach>
+        on duplicate key update
+        uuid = values(uuid),
+        device_name = values(device_name),
+        device_status = values(device_status),
+        device_longitude = values(device_longitude),
+        device_latitude = values(device_latitude),
+        area_id = values(area_id),
+        create_time = values(create_time),
+        info = values(info)
+    </insert>
+
+    <!--通过uuid修改数据-->
+    <update id="update">
+        update s_device
+        <set>
+            <if test="uuid != null and uuid != ''">
+                uuid = #{uuid},
+            </if>
+            <if test="deviceName != null and deviceName != ''">
+                device_name = #{deviceName},
+            </if>
+            <if test="deviceStatus != null">
+                device_status = #{deviceStatus},
+            </if>
+            <if test="deviceLongitude != null">
+                device_longitude = #{deviceLongitude},
+            </if>
+            <if test="deviceLatitude != null">
+                device_latitude = #{deviceLatitude},
+            </if>
+            <if test="areaId != null">
+                area_id = (select id from s_area wehre uuid =#{areaUuid}),
+            </if>
+            <if test="info != null and info != ''">
+                info = #{info},
+            </if>
+        </set>
+        where uuid = #{uuid}
+    </update>
+
+    <!--通过uuid删除-->
+    <delete id="deleteByUuid">
+        delete from s_device where uuid = #{uuid}
+    </delete>
+
+</mapper>
+

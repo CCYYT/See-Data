@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../../plugins/elementUi/index.css">
+    <style>
+        .operateHeader{
+            margin-top: 15px;
+            width: 100%;
+            height: 50px;
+            background-color: #ffffff;
+            box-shadow: 2px 3px 7px 0px #d1d1d1;
+            text-align: center;
+        }
+        .el-card{
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="operateHeader">
+        <span>视图设置</span>
+    </div>
+    <el-row :gutter="15">
+        <el-col :xl="8" :xs="24" :lg="12" v-for="device in deviceList">
+            <el-card class="box-card">
+                <div slot="header" >
+                    <span :title="
+                                '设备名: '+device.deviceName+'\n'+
+                                '设备状态: '+formatDeviceStatus(device.deviceStatus)+'\n'+
+                                '数据类型id: '+device.dataTypeId+'\n'+
+                                '数据类型描述： '+device.dataTypeInfo+'\n'+
+                                '所属区域UUID: '+device.areaUuid+'\n'+
+                                '设备创建时间: '+device.createTime+'\n'+
+                                '设备描述: '+device.info"
+                          style="font-size: 25px"
+                    >{{device.deviceName}}</span>
+                    <span>-{{device.dataTypeInfo}}</span>
+<!--                    <span>({{formatDeviceStatus(device.deviceStatus)}})</span>-->
+                    <el-select style="float: right;width: 120px"
+                               v-model="deviceCharts[device.uuid+device.dataTypeId].dataType"
+                               placeholder="显示类型">
+                        <el-option
+                                v-for="item in options"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value">
+                        </el-option>
+                    </el-select>
+                    <el-select style="float: right;width: 85px"
+                               v-model="deviceCharts[device.uuid+device.dataTypeId].requestDelay"
+                               @change="updateRefreshTime"
+                               placeholder="刷新时间"
+                    >
+                        <el-option
+                                v-for="item in requestDelayOptions"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value">
+                        </el-option>
+                    </el-select>
+                </div>
+
+
+                <!--图表-->
+                <div :id="deviceCharts[device.uuid+device.dataTypeId].elementId"
+                     style="width: 100%;height: 300px"
+                     v-show="deviceCharts[device.uuid+device.dataTypeId].dataType == 'chart'">
+                </div>
+
+                <!--数据-->
+                <div class="col-div"
+                     v-show="deviceCharts[device.uuid+device.dataTypeId].dataType == 'data'">
+                    <el-table
+                            :data="deviceCharts[device.uuid+device.dataTypeId].content.pageData"
+                            style="width: 100%"
+                            max-height="258px"
+                            size="medium"
+                            :cell-style="{height: '50px'}"
+                            :default-sort = "{prop: 'createTime', order: 'descending'}">
+                        <el-table-column
+                                prop="deviceData"
+                                label="数据"
+                                width="100"
+                                sortable
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="dataUnit"
+                                label="单位"
+                                width="100"
+                                sortable
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="dataInfo"
+                                label="描述"
+                                sortable
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="createTime"
+                                label="最近一次数据"
+                                :formatter="formatCreateDate"
+                                sortable>
+                        </el-table-column>
+                    </el-table>
+                </div>
+
+                <!--警报-->
+                <div class="col-div"
+                     v-show="deviceCharts[device.uuid+device.dataTypeId].dataType == 'warning'">
+                    <el-table
+                            :data="deviceCharts[device.uuid+device.dataTypeId].content.pageData"
+                            style="width: 100%"
+                            max-height="258px"
+                            size="medium"
+                            :cell-style="{height: '50px'}"
+                            :default-sort = "{prop: 'createTime', order: 'descending'}">
+
+                        <el-table-column
+                                prop="warningInfo"
+                                label="内容"
+                                sortable
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="warningLevel"
+                                label="等级"
+                                :formatter="formatWarningLevel"
+                                sortable
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="status"
+                                label="状态"
+                                :formatter="formatWarningStatus"
+                                sortable
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="createTime"
+                                label="发生时间"
+                                :formatter="formatCreateDate"
+                                sortable>
+                        </el-table-column>
+                    </el-table>
+                </div>
+
+                <!--规则-->
+                <div class="col-div"
+                     v-show="deviceCharts[device.uuid+device.dataTypeId].dataType == 'rule'">
+                    <el-table
+                            :data="deviceCharts[device.uuid+device.dataTypeId].content.pageData"
+                            style="width: 100%"
+                            max-height="258px"
+                            size="medium"
+                            :cell-style="{height: '50px'}"
+                            :default-sort = "{prop: 'createTime', order: 'descending'}">
+
+                        <el-table-column
+                                prop="warningInfo"
+                                label="警告内容"
+                                sortable
+                        ></el-table-column>
+
+                        <el-table-column
+                                prop="warningValue"
+                                label="预警值"
+                                sortable
+                        ></el-table-column>
+
+                        <el-table-column
+                                prop="warningRules"
+                                label="规则"
+                                :formatter="formatWarningRules"
+                                sortable
+                        ></el-table-column>
+
+                        <el-table-column
+                                prop="warningLevel"
+                                label="等级"
+                                :formatter="formatWarningLevel"
+                                sortable
+                        ></el-table-column>
+
+                        <el-table-column
+                                prop="reminderMethod"
+                                label="提示方式"
+                                :formatter="formatReminderMethod"
+                                sortable
+                        ></el-table-column>
+
+                        <el-table-column
+                                prop="createTime"
+                                label="创建时间"
+                                width="200"
+                                :formatter="formatCreateDate"
+                                sortable>
+                        </el-table-column>
+                    </el-table>
+
+                </div>
+
+                <!--分页主键-->
+                <el-pagination
+                        @size-change="(val)=>{handleSizeChangeByDeviceUuid(val,device.uuid+device.dataTypeId)}"
+                        @current-change="(val)=>{getPageByDeviceUuid(val,device.uuid+device.dataTypeId)}"
+                        :current-page="deviceCharts[device.uuid+device.dataTypeId].content.page"
+                        :page-sizes="[10, 20, 30]"
+                        :page-size="deviceCharts[device.uuid+device.dataTypeId].content.pageSize"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="deviceCharts[device.uuid+device.dataTypeId].content.totalElementNum"
+                        :pager-count=5
+                        style="margin-top: 10px"
+                        v-show="deviceCharts[device.uuid+device.dataTypeId].dataType != 'chart'"
+                >
+                </el-pagination>
+
+            </el-card>
+        </el-col>
+<div>
+
+
+<!--        <el-col :xl="8" :xs="24" :lg="12">-->
+<!--            <el-card class="box-card">-->
+<!--                <div slot="header" >-->
+<!--                    <span>设备一|区域|UUID</span>-->
+<!--                    <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>-->
+<!--                </div>-->
+<!--                <div id="chart1" style="width: 100%;height: 300px">-->
+
+<!--                </div>-->
+<!--            </el-card>-->
+<!--        </el-col>-->
+
+<!--        <el-col :xl="8" :xs="24" :lg="12">-->
+<!--            <el-card class="box-card">-->
+<!--                <div slot="header">-->
+<!--                    <span>设备一</span>-->
+<!--                    <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>-->
+<!--                </div>-->
+<!--                <div id="chart2" style="width: 100%;height: 300px">-->
+
+<!--                </div>-->
+<!--            </el-card>-->
+<!--        </el-col>-->
+
+<!--        <el-col :xl="8" :xs="24" :lg="12">-->
+<!--            <el-card class="box-card">-->
+<!--                <div slot="header">-->
+<!--                    <span>设备一</span>-->
+<!--                    <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>-->
+<!--                </div>-->
+<!--                <div id="chart3" style="width: 100%;height: 300px">-->
+
+<!--                </div>-->
+<!--            </el-card>-->
+<!--        </el-col>-->
+</div>
+    </el-row>
+
+
+</div>
+
+
+<script src="../../plugins/vue.js"></script>
+<script src="../../plugins/elementUi/index.js"></script>
+<script src="../../plugins/axios-0.18.0.js"></script>
+<script src="../../plugins/echarts.min.js"></script>
+<script src="../../js/EchartsOptions/BasicAreaOption.js"></script>
+<script src="../../js/EchartsOptions/GaugeOption.js"></script>
+<script src="../../js/RequestCommonUtil.js"></script>
+<script src="../../js/FieldDetectionUtil.js"></script>
+<script src="../../js/TipCommonUtil.js"></script>
+<script src="../../js/ChartBuilder.js"></script>
+<script src="../../js/FormatUtil.js"></script>
+
+<script>
+    var websocket = null;
+    var vue = new Vue({
+        el:"#app",
+        data:{
+            // deviceDataMapping:{},//设备与数据类型映射关系
+            deviceList:[],//设备列表
+            deviceCharts:{},//图表信息集合
+            /**
+             * //每一个设备卡片对应一个对象   设备卡片 > 图表
+             *                 "deviceUuid":{    //deviceUuid处为图表名 唯一 这里取deviceUuid      设备卡片名/图表名
+             *                     elementId:"",
+             *                     chartSort:"",  //图表类型 echarts中的样式
+             *                     dataType:"",   //数据类型 图表(chart)|数据(data)|警报(warning)|规则(rule)|定时任务(cron)
+             *                     requestDelay:1000,
+             *        //           page:{
+             *        //               sizeChange:function(val){
+             *        //                   vue.$data.deviceCharts['deviceUuid'].content.pageSize = val;
+             *        //               },
+             *        //               currentChange:function(val){
+             *        //                   vue.$data.deviceCharts['deviceUuid'].content.page = val;
+             *        //               }
+             *        //           }
+             *                     content:{
+             *                         data:[],dataUnit:"",dataUnitSymbol:"",date:[],
+             *                         page:0,pageSize:10,totalElementNum:0, totalPagesNum:1,pageData:[{}]}
+             *                     }
+             *                 },
+            * */
+            refreshTime:{},//数据刷新时间
+            /**
+             *                 1000:["uuid"]     // 刷新时间:设备卡片名/图表名
+             *                 ↓↓↓ ↓↓↓
+             *                 1000:{
+             *                      deviceCardNames:["uuid"],
+             * 		                interval:(setInterval)            //计时器
+             *                 }
+             *                 ...
+            * */
+            deviceIntervalIndexTable:{},//设备刷新时间映射表  "deviceUuid":requestDelay
+            options:[
+                {label:"图表",value:"chart"},
+                {label:"数据",value:"data"},
+                {label:"警报",value:"warning"},
+                {label:"规则",value:"rule"},
+                {label:"定时任务",value:"cron"},
+            ],
+            requestDelayOptions:[
+                {label:"1秒",value:"1000"},
+                {label:"2秒",value:"2000"},
+                {label:"5秒",value:"5000"},
+                {label:"10秒",value:"10000"},
+                {label:"30秒",value:"30000"},
+            ],
+        },
+        mounted(){
+            //初始化websocket连接
+            this.initWebSocket();
+
+            //开启通用提示框功能
+            commonRequestEnableTip(this);
+
+            //1.获取所属组中的所有设备   发送请求
+            commonGetAllRequest("/device/group/deviceAndDataTypeList",
+                (res)=>{
+                    this.deviceList = res.data.data;
+                    //1.1构建deviceDataMapping    查找设备的 数据类型
+
+
+                    //2.根据设备列表构建deviceCharts   默认面积图表显示  默认请求时间1000毫秒
+                    var i=0;
+                    for (let device of this.deviceList) {
+                        // 使用Vue.set方法可以向Vue响应式对象（例如data选项中声明的对象）添加新的属性，并确保新属性是响应式的。
+                        Vue.set(this.deviceCharts,device.uuid+device.dataTypeId,{
+                                elementId:"deviceChart"+i++,
+                                chartSort:device.chartSort,
+                                dataType:"chart",
+                                deviceDataTypeId:device.dataTypeId,
+                                deviceUuid:device.uuid,
+                                content:{
+                                    data:[],dataUnit:"",dataUnitSymbol:"",date:[],dataMax:device.dataMax,dataMin:device.dataMin,
+                                    page:0,pageSize:10,totalElementNum:0, totalPagesNum:1,pageData:[{}]
+                                },
+                                requestDelay:1000
+                            }
+                        )
+                    }
+                    //dom元素更新后调用
+                    this.$nextTick(() =>{
+                        //3.根据deviceCharts构建图表
+                        chartBuilder(this.deviceCharts);
+                    })
+                    // 页面大小发生变化时
+                    window.onresize = () => {
+                        chartResize(this.deviceCharts);
+                    }
+
+                    // 4.将数据请求 注册到循环事件中
+                    this.updateRefreshTime();
+
+
+                    // for (let key in this.refreshTime) {
+                    //     setInterval(()=>{
+                    //         console.log(key)
+                    //         console.log(this.refreshTime)
+                    //         for(let deviceCardName of this.refreshTime[key].cardName){
+                    //             this.refreshDeviceChartsData(deviceCardName);
+                    //         }
+                    //     },this.refreshTime[key].requestDelay);
+                    // }
+                },
+                (err)=>{
+                    console.log(err.data.msg);
+                })
+        },
+        methods:{
+            formatCreateDate(row,column){
+                // 调用通用格式化时间
+                return formatDate(row[column.property]);
+            },
+            formatDeviceStatus(value){
+                return formatDeviceStatus(value)
+            },
+            formatWarningLevel(row,column){
+                return formatWarningLevel(row[column.property]);
+            },
+            formatWarningStatus(row,column){
+                return formatWarningStatus(row[column.property]);
+            },
+            formatReminderMethod(row,column){
+                return formatReminderMethod(row[column.property]);
+            },
+            getValueFormDeviceList(deviceUuid,key){
+                for(let device in this.deviceList){
+                    if(device.uuid == deviceUuid) return device[key]
+                }
+            },
+            formatWarningRules(row,column){
+                return formatWarningRules(row[column.property]);
+            },
+            initWebSocket(){
+                let userUuid = sessionStorage.getItem("userUuid");
+                if(userUuid == null){
+                    commonErrorTip("获取userUuid失败!")
+                    return;
+                }
+                websocket = new WebSocket("ws://localhost/user/"+userUuid);
+                websocket.onmessage = this.onMsg;
+                //连接发生错误的回调方法
+                websocket.onerror = function() {alert("websocket连接错误")};
+            },
+
+            /**
+             * 更新数据请求间隔时间
+            * */
+            updateRefreshTime(){
+                var requestDelay,deviceCardNames=[];
+                for (let key in this.deviceCharts) {
+                    requestDelay = this.deviceCharts[key].requestDelay;
+                    if(requestDelay in this.refreshTime){
+                        if(key in this.refreshTime[requestDelay].deviceCardNames){
+                            continue
+                        }else {
+                            this.refreshTime[requestDelay].deviceCardNames.push(key);
+                            // 更新设备刷新时间映射表
+                            if(this.deviceIntervalIndexTable[key] != null) {
+                                // 清除在刷新时间的位置
+                                deviceCardNames = this.refreshTime[this.deviceIntervalIndexTable[key]].deviceCardNames;
+                                deviceCardNames.splice(deviceCardNames.indexOf(key),1);
+                            }
+                            this.deviceIntervalIndexTable[key] = requestDelay;
+                        }
+                    }else{
+                        this.refreshTime[requestDelay] = {"deviceCardNames":[key]};
+                        this.refreshTime[requestDelay].interval = setInterval(()=>{
+                                //深拷贝当前需要刷新的数据卡片   防止数据卡片临时更换请求时间发送的异常
+                                var deviceCardNames = JSON.parse(JSON.stringify(this.refreshTime[requestDelay].deviceCardNames));
+                                for(let deviceCardName of deviceCardNames){
+                                    this.refreshDeviceChartsData(deviceCardName);
+                                }
+                            },requestDelay);
+                        // 更新设备刷新时间映射表
+                        if(this.deviceIntervalIndexTable[key] != null) {
+                            // 清除在刷新时间的位置
+                            deviceCardNames = this.refreshTime[this.deviceIntervalIndexTable[key]].deviceCardNames;
+                            deviceCardNames.splice(deviceCardNames.indexOf(key),1);
+                        }
+                        this.deviceIntervalIndexTable[key] = requestDelay;
+
+                    }
+                }
+                // 回收空循环器
+                for (let key in this.refreshTime) {
+                    if(this.refreshTime[key].deviceCardNames.length <= 0){
+                        clearInterval(this.refreshTime[key].interval)
+                        delete this.refreshTime[key];
+                    }
+                }
+            },
+
+            /**
+             * websocket请求数据
+             * 消息结构:{requestDataType:"",param:"",deviceCardName:""}
+             * requestDataType:请求数据类型 范围(deviceData:设备数据, warning:警告数据, warningRules:预警规则)
+             * param: 请求参数
+             * deviceCardName: 数据卡片名
+            * */
+            refreshDeviceChartsData(deviceCardName){
+                //数据类型 图表(chart)|数据(data)|警报(warning)|规则(rule)|定时任务(cron)
+                var deviceCardContent = this.deviceCharts[deviceCardName].content;
+                switch (this.deviceCharts[deviceCardName].dataType){
+                    case "chart":
+                        var page = {
+                            "fieldRule": {
+                                "deviceUuid":{
+                                    "condition":{
+                                        "value":[this.deviceCharts[deviceCardName].deviceUuid],
+                                        "mode":"equal"
+                                    }
+                                },
+                                "dataTypeId":{
+                                    "condition":{
+                                        "value":[this.deviceCharts[deviceCardName].deviceDataTypeId],
+                                        "mode":"equal"
+                                    }
+                                },
+                                "createTime": {
+                                    "sort": "desc"
+                                }
+                            },
+                            page:0
+                        };
+                        if(deviceCardContent.date.length <=0 && deviceCardContent.data.length <=0){
+                            dataLoading(deviceCardName);
+                            this.sendObjectMsg({"requestDataType":"deviceData","param":page,"deviceCardName":deviceCardName});
+                        } else{
+                            page.pageSize = 1;
+                            this.sendObjectMsg({"requestDataType":"deviceData","param":page,"deviceCardName":deviceCardName});
+                        }
+                        break;
+                    case "data":
+                        var page = {
+                            "fieldRule": {
+                                "deviceUuid":{
+                                    "condition":{
+                                        "value":[this.deviceCharts[deviceCardName].deviceUuid],
+                                        "mode":"equal"
+                                    }
+                                },
+                                "dataTypeId":{
+                                    "condition":{
+                                        "value":[this.deviceCharts[deviceCardName].deviceDataTypeId],
+                                        "mode":"equal"
+                                    }
+                                },
+                                "createTime": {
+                                    "sort": "desc"
+                                }
+                            },
+                            page:0
+                        };
+                        if(deviceCardContent.pageSize != null)page["pageSize"]=deviceCardContent.pageSize;
+                        if(deviceCardContent.page > 1)page["page"] = deviceCardContent.page-1;
+                        this.sendObjectMsg({"requestDataType":"deviceData","param":page,"deviceCardName":deviceCardName});
+                        break;
+                    case "warning":
+                        var page = {
+                            "fieldRule": {
+                                "deviceUuid":{
+                                    "condition":{
+                                        "value":[this.deviceCharts[deviceCardName].deviceUuid],
+                                        "mode":"equal"
+                                    }
+                                },
+                                "dataTypeId":{
+                                    "condition":{
+                                        "value":[this.deviceCharts[deviceCardName].deviceDataTypeId],
+                                        "mode":"equal"
+                                    }
+                                },
+                                "createTime": {
+                                    "sort": "desc"
+                                }
+                            },
+                            page:0
+                        };
+                        if(deviceCardContent.pageSize != null)page["pageSize"]=deviceCardContent.pageSize;
+                        if(deviceCardContent.page > 1)page["page"] = deviceCardContent.page-1;
+                        this.sendObjectMsg({"requestDataType":"warning","param":page,"deviceCardName":deviceCardName});
+                        break;
+                    case "rule":
+                        var page = {
+                            "fieldRule": {
+                                "deviceUuid":{
+                                    "condition":{
+                                        "value":[this.deviceCharts[deviceCardName].deviceUuid],
+                                        "mode":"equal"
+                                    }
+                                },
+                                "dataTypeId":{
+                                    "condition":{
+                                        "value":[this.deviceCharts[deviceCardName].deviceDataTypeId],
+                                        "mode":"equal"
+                                    }
+                                },
+                                "createTime": {
+                                    "sort": "desc"
+                                }
+                            }
+                        };
+                        if(deviceCardContent.pageSize != null)page["pageSize"]=deviceCardContent.pageSize;
+                        if(deviceCardContent.page > 1)page["page"] = deviceCardContent.page-1;
+                        this.sendObjectMsg({"requestDataType":"warningRules","param":page,"deviceCardName":deviceCardName});
+                        break;
+                    case "cron":break;
+                }
+            },
+
+            /**
+             * 接收到websocket消息时
+             * 返回消息结构:{deviceCardName:"",content:""}
+             * */
+            onMsg(event){
+                let data = JSON.parse(event.data);
+                let deviceCardName = data.deviceCardName;
+                let deviceCardContent = this.deviceCharts[deviceCardName].content;
+                var content = data.content;
+                switch (this.deviceCharts[deviceCardName].dataType) {
+                    case "chart":
+                        if (content.content.length == 1) {
+                            if (deviceCardContent.date[deviceCardContent.date.length - 1] == content.content[0].createTime) {
+                                // 最新数据与上一次数据相同直接返回
+                                return
+                            }
+                            // 长度大于10删除第一个元素
+                            if (deviceCardContent.date.length >= 10) {
+                                deviceCardContent.date.shift();
+                            }
+                            deviceCardContent.date.push(content.content[0].createTime);
+
+                            // 长度大于10删除第一个元素
+                            if (deviceCardContent.data.length >= 10) {
+                                deviceCardContent.data.shift();
+                            }
+                            deviceCardContent.data.push(content.content[0].deviceData);
+
+                            if (deviceCardContent.dataUnit != content.content[0].dataUnit) {
+                                deviceCardContent.dataUnit = content.content[0].dataUnit;
+                            }
+
+                            if (deviceCardContent.dataUnitSymbol != content.content[0].dataUnitSymbol) {
+                                deviceCardContent.dataUnitSymbol = content.content[0].dataUnitSymbol;
+                            }
+                        } else{
+                            for (let i = content.content.length - 1; 0 <= i; i--) {
+                                deviceCardContent.date.push(content.content[i].createTime);
+                                deviceCardContent.data.push(content.content[i].deviceData);
+                                deviceCardContent.dataUnit = content.content[i].dataUnit;
+                                deviceCardContent.dataUnitSymbol = content.content[i].dataUnitSymbol;
+                            }
+                            dataLoaded(deviceCardName);
+                        }
+                        //刷新图表数据
+                        refreshData(deviceCardName, deviceCardContent);
+                        break;
+                    case "data":
+                        if(content.content.length != 0 && deviceCardContent.pageData.length != 0){
+                            if (deviceCardContent.pageData[0].createTime == content.content[0].createTime &&
+                                deviceCardContent.pageSize == content.content[0].pageSize &&
+                                deviceCardContent.page == content.content[0].page) {
+                                // 最新数据与上一次数据相同直接返回
+                                return
+                            }
+                        }
+                        if(content.content.length == 0 && deviceCardContent.pageData.length == 0)return;
+                        deviceCardContent.page = content.page + 1;
+                        deviceCardContent.pageSize = content.pageSize;
+                        deviceCardContent.totalElementNum = content.totalElementNum;
+                        deviceCardContent.totalPagesNum = content.totalPagesNum;
+                        deviceCardContent.pageData = content.content;
+                        break;
+                    case "warning":
+                        if(content.content.length != 0 && deviceCardContent.pageData.length != 0){
+                            if(deviceCardContent.pageData[0].createTime == content.content[0].createTime &&
+                                deviceCardContent.pageSize == content.content[0].pageSize &&
+                                deviceCardContent.page == content.content[0].page){
+                                // 最新数据与上一次数据相同直接返回
+                                return
+                            }
+                        }
+                        if(content.content.length == 0 && deviceCardContent.pageData.length == 0)return;
+                        deviceCardContent.page = content.page+1;
+                        deviceCardContent.pageSize = content.pageSize;
+                        deviceCardContent.totalElementNum = content.totalElementNum;
+                        deviceCardContent.totalPagesNum = content.totalPagesNum;
+                        deviceCardContent.pageData = content.content;
+                        break;
+                    case "rule":
+                        if(content.content.length != 0 && deviceCardContent.pageData.length != 0){
+                            if(deviceCardContent.pageData[0].createTime == content.content[0].createTime &&
+                                deviceCardContent.pageSize == content.content[0].pageSize &&
+                                deviceCardContent.page == content.content[0].page){
+                                // 最新数据与上一次数据相同直接返回
+                                return
+                            }
+                        }
+                        if(content.content.length == 0 && deviceCardContent.pageData.length == 0)return;
+                        deviceCardContent.page = content.page+1;
+                        deviceCardContent.pageSize = content.pageSize;
+                        deviceCardContent.totalElementNum = content.totalElementNum;
+                        deviceCardContent.totalPagesNum = content.totalPagesNum;
+                        deviceCardContent.pageData = content.content;
+                        break;
+                    case "cron":break;
+                }
+
+            },
+
+            sendObjectMsg(msg){
+                if(websocket == null) {
+                    commonErrorTip("未连接服务器!");
+                    return;
+                }
+                if(websocket.readyState === WebSocket.OPEN) {
+                    if (typeof msg === 'object' && msg !== null) {
+                        websocket.send(JSON.stringify(msg))
+                    }
+                }
+            },
+
+            /**
+             * 跳转数据页数
+             * 只刷新一个数据卡片的数据
+            * */
+            getPageByDeviceUuid(pageNum,deviceCardName){
+                this.deviceCharts[deviceCardName].content.page = pageNum;
+                this.refreshDeviceChartsData(deviceCardName);
+            },
+
+            // /**
+            //  * 跳转数据页数 （柯里化
+            //  * 只刷新一个数据卡片的数据
+            //  * */
+            // getPageByDeviceUuid(deviceUuid){
+            //     return function (pageNum){
+            //         this.deviceCharts[deviceUuid].content.page = pageNum;
+            //         this.refreshDeviceChartsData(deviceUuid);
+            //     }
+            // },
+
+            /**
+             * 设置每一页显示多少数据
+             * 只刷新一个数据卡片的数据
+            * */
+            handleSizeChangeByDeviceUuid(pageSize,deviceCardName){
+                this.deviceCharts[deviceCardName].content.pageSize = pageSize;
+                this.refreshDeviceChartsData(deviceCardName);
+            },
+
+        }
+
+    })
+
+</script>
+</body>
+</html>

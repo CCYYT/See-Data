@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <!-- 页面meta -->
+
+  <meta charset="utf-8">
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>设备数据</title>
+
+  <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+
+  <!-- 引入样式 -->
+
+  <link rel="stylesheet" href="../../plugins/elementUi/index.css">
+  <style>
+    #app{
+      /*margin: 10px 25px;*/
+      box-shadow: 1px 2px 5px #d3cece;
+      width:96vw;
+      background-color: white;
+      padding: 1px 25px;
+    }
+  </style>
+
+</head>
+
+<body class="hold-transition" >
+
+<div id="app">
+
+  <div class="content-header">
+
+    <h1>设备数据</h1>
+
+  </div>
+
+  <div class="app-container">
+
+    <div class="box">
+
+      <div class="filter-container">
+
+        <el-collapse-transition>
+          <div v-show="!dialogFormVisibleSearch">
+            <el-input placeholder="设备uuid" v-model="page.fieldRule.deviceUuid.condition.value[0]" style="width: 200px;" class="filter-item"
+                      @keyup.enter.native='getByDeviceUuid()'
+                      clearable
+            ></el-input>
+
+            <el-button @click='getByDeviceUuid()' class="dalfBut">查询</el-button>
+
+            <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
+
+            <el-button type="primary" class="butT" @click="dialogFormVisibleSearch = !dialogFormVisibleSearch">高级查询</el-button>
+          </div>
+        </el-collapse-transition>
+            <el-collapse-transition>
+              <div v-show="dialogFormVisibleSearch">
+                <el-divider></el-divider>
+                <el-form ref="dataSearchForm" label-position="right" label-width="100px">
+
+                  <el-row :gutter="10">
+
+                    <el-col :span="25">
+
+                      <el-form-item label="设备UUID">
+
+                        <el-input v-model="page.fieldRule.deviceUuid.condition.value[0]" clearable/>
+
+                      </el-form-item>
+
+                    </el-col>
+
+                    <el-col :span="25">
+
+                      <el-checkbox v-model="page.fieldRule.deviceUuid.condition.mode" label="模糊查询"
+                                   true-label="like" false-label="equal"
+                                   border></el-checkbox>
+
+                    </el-col>
+                    <el-col :span="25">
+                      <el-form-item label="字段排序">
+                        <el-radio-group v-model="page.fieldRule.deviceUuid.sort">
+                          <el-radio label="asc" style="margin-right: 0px" border>升序</el-radio>
+                          <el-radio label="desc" border>降序</el-radio>
+                        </el-radio-group>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+
+                  <el-row :gutter="10">
+
+                    <el-col :span="25">
+
+                      <el-form-item label="设备数据" prop="deviceData">
+
+                        <el-input v-model="page.fieldRule.deviceData.condition.value[0]" clearable/>
+
+                      </el-form-item>
+
+                    </el-col>
+
+                    <el-col :span="25">
+                      <el-checkbox v-model="page.fieldRule.deviceData.condition.mode" label="模糊查询"
+                                   true-label="like" false-label="equal"
+                                   border></el-checkbox>
+                    </el-col>
+
+                    <el-col :span="25">
+                      <el-form-item label="字段排序">
+                        <el-radio-group v-model="page.fieldRule.deviceData.sort">
+                          <el-radio label="asc" style="margin-right: 0px" border>升序</el-radio>
+                          <el-radio label="desc" border>降序</el-radio>
+                        </el-radio-group>
+                      </el-form-item>
+                    </el-col>
+
+                  </el-row>
+
+                  <el-row>
+                    <el-col :span="25">
+                    <el-form-item label="创建时间">
+                      <el-date-picker
+                              v-model="page.fieldRule.createTime.condition.value"
+                              type="datetimerange"
+                              range-separator="至"
+                              start-placeholder="开始日期"
+                              end-placeholder="结束日期">
+                      </el-date-picker>
+                    </el-form-item>
+                    </el-col>
+
+                    <el-col :span="25">
+                      <el-form-item label="字段排序">
+                        <el-radio-group v-model="page.fieldRule.createTime.sort">
+                          <el-radio label="asc" style="margin-right: 0px" border>升序</el-radio>
+                          <el-radio label="desc" border>降序</el-radio>
+                        </el-radio-group>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+
+                  <el-row>
+
+                    <el-col :span="24">
+
+                      <el-form-item label="描述">
+
+                        <el-input v-model="page.fieldRule.dataInfo.condition.value[0]" type="textarea"></el-input>
+
+                      </el-form-item>
+
+                    </el-col>
+
+                  </el-row>
+
+                  <el-row>
+                    <el-form-item>
+                      <el-button @click="dialogFormVisibleSearch = false">取消</el-button>
+
+                      <el-button type="primary" @click="handleSearch()">查询</el-button>
+                    </el-form-item>
+                  </el-row>
+
+                </el-form>
+
+                <el-divider></el-divider>
+              </div>
+            </el-collapse-transition>
+
+      </div>
+
+      <el-table size="small" current-row-key="id"
+                :data="content"
+                stripe highlight-current-row>
+
+        <el-table-column prop="deviceUuid" label="设备UUID" align="center"></el-table-column>
+
+        <el-table-column prop="deviceData" label="设备数据" align="center" sortable></el-table-column>
+
+        <el-table-column prop="dataUnit" label="数据类型" align="center" sortable></el-table-column>
+
+        <el-table-column prop="dataUnitSymbol" label="数据类型符号" align="center" sortable></el-table-column>
+
+        <el-table-column prop="dataInfo" label="描述" align="center"></el-table-column>
+
+        <el-table-column prop="createTime" label="创建时间" align="center" :formatter="formatDate" sortable></el-table-column>
+
+        <el-table-column label="操作" align="center">
+
+          <template slot-scope="scope">
+
+            <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+
+            <el-button type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+
+          </template>
+
+        </el-table-column>
+
+      </el-table>
+
+      <!--分页主键-->
+      <div>
+        <el-pagination
+                @size-change="handleSizeChange"
+                @current-change="getPage"
+                :current-page="page.page+1"
+                :page-sizes="[10, 20, 50, 100]"
+                :page-size="page.pageSize"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="page.totalElementNum">
+        </el-pagination>
+      </div>
+
+
+      <!-- 新增标签弹层 -->
+      <div class="add-form">
+
+        <el-dialog title="添加" :visible.sync="dialogFormVisibleAdd">
+
+          <el-form ref="dataAddForm" :model="formData" :rules="rules" label-position="right" label-width="100px">
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="设备UUID" prop="deviceUuid">
+
+                  <el-input v-model="formData.deviceUuid"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="设备数据" prop="deviceData">
+
+                  <el-input v-model="formData.deviceData"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+
+            <el-row>
+
+              <el-col :span="24">
+
+                <el-form-item label="描述">
+
+                  <el-input v-model="formData.dataInfo" type="textarea"></el-input>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+          </el-form>
+
+          <div slot="footer" class="dialog-footer">
+
+            <el-button @click="dialogFormVisibleAdd = false">取消</el-button>
+
+            <el-button type="primary" @click="handleAdd('dataAddForm')">确定</el-button>
+
+          </div>
+
+        </el-dialog>
+
+      </div>
+
+      <!-- 编辑标签弹层 -->
+      <div class="add-form">
+
+        <el-dialog title="编辑检查项" :visible.sync="dialogFormVisibleEdit">
+
+          <el-form ref="dataEditForm" :model="formData" :rules="rules" label-position="right" label-width="100px">
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="设备UUID" prop="deviceUuid">
+
+                  <el-input v-model="formData.deviceUuid"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="设备数据" prop="deviceData">
+
+                  <el-input v-model="formData.deviceData"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="24">
+
+                <el-form-item label="描述">
+
+                  <el-input v-model="formData.dataInfo" type="textarea"></el-input>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+          </el-form>
+
+          <div slot="footer" class="dialog-footer">
+
+            <el-button @click="dialogFormVisibleEdit = false">取消</el-button>
+
+            <el-button type="primary" @click="handleEdit('dataEditForm')">确定</el-button>
+
+          </div>
+
+        </el-dialog>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+
+<!-- 引入组件库 -->
+
+<script src="../../plugins/vue.js"></script>
+<script src="../../plugins/elementUi/index.js"></script>
+<script src="../../plugins/axios-0.18.0.js"></script>
+<script src="../../js/FieldDetectionUtil.js"></script>
+<script src="../../js/RequestCommonUtil.js"></script>
+<script src="../../js/FormatUtil.js"></script>
+<script src="../../js/TipCommonUtil.js"></script>
+
+<script>
+  Vue.config.productionTip = false;
+  var vue = new Vue({
+    el: '#app',
+    data:{
+      dialogFormVisibleAdd: false,
+      dialogFormVisibleEdit: false,
+      dialogFormVisibleSearch: false,
+      page: {
+        fieldRule:{
+          id:{
+            condition:{
+              value:[""],
+              mode:"equal"
+            }
+          },
+          deviceUuid:{
+            condition:{
+              value:[""],
+              mode:"equal"
+            }
+          },
+          deviceData:{
+            condition:{
+              value:[""],
+              mode:"equal"
+            }
+          },
+          createTime:{
+            condition:{
+              value:["null","null"],
+              mode:"range"
+            }
+          },
+          dataInfo:{
+            condition:{
+              value:[""],
+              mode:"like"
+            }
+          }
+        },
+        page: 0, //当前页码
+        pageSize: 10 //每页大小
+      },//分页查询条件
+      content:[], //数据正文
+      formData: {},//表单数据
+      rules: {//校验规则
+        deviceUuid: [{ required: true, message: '设备uuid为必填项', trigger: 'blur' }],
+        deviceData: [{ required: true, message: '设备数据为必填项', trigger: 'blur' }]
+      }
+    },
+
+    //钩子函数，VUE对象初始化完成后自动执行
+    created() {
+      this.getPage(1);
+      //开启通用提示框功能
+      commonRequestEnableTip(this);
+    },
+    methods: {
+      formatDate(row,column){
+        // 调用通用格式化时间
+        return formatDate(row[column.property]);
+      },
+
+      //列表
+      getPage(pageNum) {
+        // 调用通用分页请求
+        commonGetPageRequest("/deviceData/query", pageNum, this.page,
+                (res)=>{
+                  this.content = res.data.content;
+                  this.page.totalPagesNum = res.data.totalPagesNum;
+                  this.page.totalElementNum = res.data.totalElementNum;
+                },
+                (err)=>{
+                  console.log(err.response);
+                });
+      },
+
+      //设置每一页显示多少数据
+      handleSizeChange(val) {
+        this.page.pageSize = val;
+        this.getPage(1);
+        // console.log(`每页 ${val} 条`);
+      },
+
+      getByDeviceUuid(){
+        var deviceUuid = this.page.fieldRule.deviceUuid;
+        this.initPageFieldRule();
+        this.page.fieldRule.deviceUuid = deviceUuid;
+        this.getPage(1);
+      },
+
+      /**
+       * 高级搜索
+       * 将search里的条件 填充到page里
+      * */
+      handleSearch(){
+        this.getPage(1);
+      },
+
+      /**
+       * 初始化this.page
+       * */
+      initPageFieldRule(){
+        this.page.fieldRule = {
+          id:{
+            condition:{
+              value:[""],
+              mode:"equal"
+            }
+          },
+          deviceUuid:{
+            condition:{
+              value:[""],
+              mode:"equal"
+            }
+          },
+          deviceData:{
+            condition:{
+              value:[""],
+              mode:"equal"
+            }
+          },
+          createTime:{
+            condition:{
+              value:["null","null"],
+              mode:"range"
+            }
+          },
+          dataInfo:{
+            condition:{
+              value:[""],
+              mode:"like"
+            }
+          }
+        }
+      },
+
+      //弹出添加窗口
+      handleCreate() {
+        this.dialogFormVisibleAdd = true;
+        this.formData = {};
+      },
+      //添加
+      handleAdd (formName) {
+        // 表单验证
+        this.$refs[formName].validate((valid) => {
+          if(valid){
+            // 调用通用添加请求
+            commonAddRequest("/userGroup",this.formData,
+                    (res)=>{
+                      this.dialogFormVisibleAdd = false;
+                    }, (err)=>{},
+                    ()=>{
+                      this.getPage(this.page.page+1);
+                    });
+          }else {
+            commonErrorTip("表单消息有误");
+          }
+        })
+      },
+
+      //弹出编辑窗口
+      handleUpdate(row) {
+        //查询数据，根据id查询
+        commonQuerySingleResult("/deviceData/"+row.id,
+                (res)=>{
+                  this.formData = res.data.data;
+                  this.dialogFormVisibleEdit = true;
+                },
+                (res)=>{});
+      },
+
+      //编辑
+      handleEdit(formName) {
+        // 表单验证
+        this.$refs[formName].validate((valid) => {
+          if(valid){
+            // 调用通用编辑请求
+            commonEditRequest("/deviceData", this.formData,
+                    (res)=>{
+                      this.dialogFormVisibleEdit = false;
+                    },
+                    (err)=>{},
+                    ()=>{
+                      this.getPage(this.page.page+1);
+                    })
+          }else {
+            commonErrorTip("表单消息有误");
+          }
+        })
+      },
+
+      // 删除
+      handleDelete(row) {
+        // 调用通用删除请求
+        commonDeleteRequest("/deviceData/"+row.id,()=>{},(err)=>{},
+                ()=>{
+                  this.getPage(this.page.page+1);
+                });
+      }
+    }
+  })
+
+</script>
+
+</html>

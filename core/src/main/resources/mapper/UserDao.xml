@@ -1,0 +1,715 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.core.dao.UserDao">
+
+    <resultMap type="com.example.core.domain.User" id="UserMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uuid" column="uuid" jdbcType="VARCHAR"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="passwd" column="passwd" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="groupId" column="group_id" jdbcType="INTEGER"/>
+        <result property="userInfo" column="user_info" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+     <!--查询uuid是否存在-->
+     <select id="uuidIsExist" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 0
+            FROM s_user
+            WHERE uuid = #{uuid}
+        )
+    </select>
+
+    <!--查询单个-->
+    <select id="queryByUuid" resultMap="UserMap">
+        select
+          id, uuid, user_name, passwd, mail, type, status, group_id, (select uuid from s_user_group where id = group_id) as group_uuid, user_info, create_time
+        from s_user
+        where uuid = #{uuid}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="UserMap">
+        select
+          id, uuid, user_name, passwd, mail, type, status, group_id, (select uuid from s_user_group where id = group_id) as group_uuid, user_info, create_time
+        from s_user
+        <if test="pageInfo.fieldRule != null">
+        <where>
+            <foreach collection="pageInfo.fieldRule.entrySet()" item="fieldInfo" index="filedName">
+                <if test="fieldInfo.condition != null">
+                    <choose>
+                        <when test="filedName == 'id'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND id IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND id = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        id LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND id >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= id
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'uuid'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND uuid IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND uuid = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        uuid LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND uuid >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= uuid
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'userName'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND user_name IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND user_name = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        user_name LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND user_name >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= user_name
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'mail'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND mail IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                    AND mail = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        mail LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND mail >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= mail
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'passwd'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND passwd IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND passwd = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        passwd LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND passwd >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= passwd
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'type'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND type IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND type = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        type LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND type >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= type
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'status'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND status IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND status = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        status LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND status >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= status
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'groupUuid'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND group_id IN ( select id from s_user_group where uuid in
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="("
+                                             close=")">
+                                        #{value}
+                                    </foreach>
+                                    )
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                    AND group_id = (select id from s_user_group where uuid =#{fieldInfo.condition.value[0]})
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        group_id IN (select id from s_user_group where uuid LIKE "%"#{value}"%")
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND group_id IN (select id from s_user_group where uuid >= #{fieldInfo.condition.value[0]})
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND group_id IN (select id from s_user_group where #{fieldInfo.condition.value[1]} >= uuid)
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'userInfo'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND user_info IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND user_info = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        user_info LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND user_info >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= user_info
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'createTime'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND create_time IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND create_time = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        create_time LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND create_time >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= create_time
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                    </choose>
+                </if>
+            </foreach>
+            </where>
+        </if>
+        <if test="pageInfo.sortList.size()>0">
+        ORDER BY
+            <foreach collection="pageInfo.sortList.entrySet()" item="sort" index="filedName" separator=",">
+            <choose>
+                <when test="filedName == 'id'">
+                    id ${sort}
+                </when>
+                <when test="filedName == 'uuid'">
+                    uuid ${sort}
+                </when>
+                <when test="filedName == 'userName'">
+                    user_name ${sort}
+                </when>
+                <when test="filedName == 'mail'">
+                    mail ${sort}
+                </when>
+                <when test="filedName == 'passwd'">
+                    passwd ${sort}
+                </when>
+                <when test="filedName == 'type'">
+                    type ${sort}
+                </when>
+                <when test="filedName == 'status'">
+                    status ${sort}
+                </when>
+                <when test="filedName == 'groupId'">
+                    group_id ${sort}
+                </when>
+                <when test="filedName == 'userInfo'">
+                    user_info ${sort}
+                </when>
+                <when test="filedName == 'createTime'">
+                    create_time ${sort}
+                </when>
+            </choose>
+            </foreach>
+        </if>
+        limit #{pageInfo.offset}, #{pageInfo.pageSize}
+    </select>
+
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from s_user
+        <if test="pageInfo.fieldRule != null">
+        <where>
+            <foreach collection="pageInfo.fieldRule.entrySet()" item="fieldInfo" index="filedName">
+                <if test="fieldInfo.condition != null">
+                    <choose>
+                        <when test="filedName == 'uuid'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND uuid IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND uuid = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        uuid LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND uuid >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= uuid
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'userName'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND user_name IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND user_name = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        user_name LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND user_name >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= user_name
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'mail'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND mail IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                    AND mail = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        mail LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND mail >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= mail
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'passwd'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND passwd IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND passwd = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        passwd LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND passwd >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= passwd
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'type'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND type IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND type = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        type LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND type >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= type
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'status'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND status IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND status = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        status LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND status >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= status
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'groupUuid'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND group_id IN ( select id from s_user_group where uuid in
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="("
+                                             close=")">
+                                        #{value}
+                                    </foreach>
+                                    )
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                    AND group_id = (select id from s_user_group where uuid =#{fieldInfo.condition.value[0]})
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        group_id IN (select id from s_user_group where uuid LIKE "%"#{value}"%")
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND group_id IN (select id from s_user_group where uuid >= #{fieldInfo.condition.value[0]})
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND group_id IN (select id from s_user_group where #{fieldInfo.condition.value[1]} >= uuid)
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'userInfo'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND user_info IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND user_info = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        user_info LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND user_info >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= user_info
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'createTime'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND create_time IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND create_time = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        create_time LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND create_time >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= create_time
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                    </choose>
+                </if>
+            </foreach>
+            </where>
+        </if>
+
+    </select>
+
+    <!--查询userName是否存在-->
+    <select id="userNameIsExist" resultType="boolean">
+        SELECT EXISTS (
+           SELECT 0
+           FROM s_user
+           WHERE user_name = #{userName}
+       )
+    </select>
+
+    <!--查询userName与passwd是否存在-->
+    <select id="verifyUserAndPassword" resultType="boolean">
+        SELECT EXISTS (
+           SELECT 0
+           FROM s_user
+           WHERE user_name = #{user.userName}
+             AND passwd = #{user.passwd}
+       )
+    </select>
+
+    <!--通过userName查找数据-->
+    <select id="queryByUserName" resultType="com.example.core.domain.User">
+        SELECT *
+        FROM s_user
+        WHERE user_name = #{userName}
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into s_user(uuid, user_name, passwd, mail, type, status, group_id, user_info)
+        values (#{uuid}, #{userName}, #{passwd}, #{mail}, #{type}, #{status}, (select id from s_user_group where uuid = #{groupUuid}), #{userInfo})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into s_user(uuid, user_name, passwd, type, status, group_id, user_info, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.uuid}, #{entity.userName}, #{entity.passwd}, #{entity.type}, #{entity.status}, #{entity.groupId}, #{entity.userInfo}, #{entity.createTime})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into s_user(uuid, user_name, passwd, type, status, group_id, user_info, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.uuid}, #{entity.userName}, #{entity.passwd}, #{entity.type}, #{entity.status}, #{entity.groupId}, #{entity.userInfo}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        uuid = values(uuid),
+        user_name = values(user_name),
+        passwd = values(passwd),
+        type = values(type),
+        status = values(status),
+        group_id = values(group_id),
+        user_info = values(user_info),
+        create_time = values(create_time)
+    </insert>
+
+    <!--通过uuid修改数据-->
+    <update id="update">
+        update s_user
+        <set>
+            <if test="userName != null and userName != ''">
+                user_name = #{userName},
+            </if>
+            <if test="passwd != null and passwd != ''">
+                passwd = #{passwd},
+            </if>
+            <if test="mail != null">
+                mail = #{mail},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="groupUuid != null">
+                group_id = (select id from s_user_group where uuid = #{groupUuid}),
+            </if>
+            <if test="userInfo != null and userInfo != ''">
+                user_info = #{userInfo},
+            </if>
+        </set>
+        where uuid = #{uuid}
+    </update>
+
+    <!--通过uuid删除-->
+    <delete id="deleteByUuid">
+        delete from s_user where uuid = #{uuid}
+    </delete>
+
+</mapper>
+

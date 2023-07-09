@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.core.dao.AdminDao">
+
+    <resultMap type="com.example.core.domain.Admin" id="AdminMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="passwd" column="passwd" jdbcType="VARCHAR"/>
+    </resultMap>
+
+<!--    <resultMap type="com.example.core.common.PageInfo" id="PageInfo">-->
+<!--        <result property="id" column="id" jdbcType="INTEGER"/>-->
+<!--        <result property="name" column="name" jdbcType="VARCHAR"/>-->
+<!--        <result property="passwd" column="passwd" jdbcType="VARCHAR"/>-->
+<!--    </resultMap>-->
+
+    <select id="uuidIsExist" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 0
+            FROM s_admin
+            WHERE uuid = #{uuid}
+        )
+    </select>
+
+    <!--查询单个-->
+    <select id="queryByUuid" resultMap="AdminMap">
+        SELECT
+          uuid, name, passwd
+        FROM s_admin
+        WHERE uuid = #{uuid}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="AdminMap">
+        select
+          id, name, passwd
+        from s_admin
+        <if test="pageInfo.startElement != null and pageInfo.endElement != null">
+            <where>
+                <if test="pageInfo.startElement.id == pageInfo.endElement.id and pageInfo.startElement.id != null">
+                    and id = #{pageInfo.startElement.id}
+                </if>
+                <if test="pageInfo.startElement.id != null">
+                    and id >= #{pageInfo.startElement.id}
+                </if>
+                <if test="pageInfo.endElement.id != null">
+                    and #{pageInfo.startElement.id} >= id
+                </if>
+
+                <if test="pageInfo.startElement.name == pageInfo.endElement.name and pageInfo.startElement.name != null">
+                    and name = #{pageInfo.startElement.name}
+                </if>
+                <if test="pageInfo.startElement.name != null">
+                    and name >= #{pageInfo.startElement.name}
+                </if>
+                <if test="pageInfo.endElement.name != null">
+                    and #{pageInfo.startElement.name} >= name
+                </if>
+
+                <if test="pageInfo.startElement.passwd == pageInfo.endElement.passwd and pageInfo.startElement.passwd != null">
+                    and passwd = #{pageInfo.startElement.passwd}
+                </if>
+                <if test="pageInfo.startElement.passwd != null">
+                    and passwd >= #{pageInfo.startElement.passwd}
+                </if>
+                <if test="pageInfo.endElement.passwd != null">
+                    and #{pageInfo.startElement.passwd} >= passwd
+                </if>
+            </where>
+        </if>
+
+        <if test="pageInfo.sortList != null and pageInfo.sortList.size()>0">
+        ORDER BY
+            <foreach collection="pageInfo.sortList" item="item" separator=",">
+                ${item.sortField}
+                <if test="item.desc == true">
+                     DESC
+                </if>
+            </foreach>
+        </if>
+        limit #{pageInfo.offset}, #{pageInfo.pageSize}
+
+    </select>
+
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from s_admin
+        <if test="pageInfo.startElement != null and pageInfo.endElement != null">
+            <where>
+                <if test="pageInfo.startElement.id == pageInfo.endElement.id and pageInfo.startElement.id != null">
+                    and id = #{pageInfo.startElement.id}
+                </if>
+                <if test="pageInfo.startElement.id != null">
+                    and id >= #{pageInfo.startElement.id}
+                </if>
+                <if test="pageInfo.endElement.id != null">
+                    and #{pageInfo.startElement.id} >= id
+                </if>
+
+                <if test="pageInfo.startElement.name == pageInfo.endElement.name and pageInfo.startElement.name != null">
+                    and name = #{pageInfo.startElement.name}
+                </if>
+                <if test="pageInfo.startElement.name != null">
+                    and name >= #{pageInfo.startElement.name}
+                </if>
+                <if test="pageInfo.endElement.name != null">
+                    and #{pageInfo.startElement.name} >= name
+                </if>
+
+                <if test="pageInfo.startElement.passwd == pageInfo.endElement.passwd and pageInfo.startElement.passwd != null">
+                    and passwd = #{pageInfo.startElement.passwd}
+                </if>
+                <if test="pageInfo.startElement.passwd != null">
+                    and passwd >= #{pageInfo.startElement.passwd}
+                </if>
+                <if test="pageInfo.endElement.passwd != null">
+                    and #{pageInfo.startElement.passwd} >= passwd
+                </if>
+            </where>
+        </if>
+    </select>
+
+    <!--查询Name与passwd是否存在-->
+    <select id="verifyNameAndPassword" resultType="java.lang.Boolean">
+        SELECT EXISTS (
+               SELECT 0
+               FROM s_admin
+               WHERE name = #{admin.name}
+                 AND passwd = #{admin.passwd}
+           )
+    </select>
+
+
+    <!--查询Name是否存在-->
+    <select id="nameIsExist" resultType="boolean">
+        SELECT EXISTS (
+               SELECT 0
+               FROM s_admin
+               WHERE name = #{name}
+           )
+    </select>
+
+    <!--通过userName查找数据-->
+    <select id="queryByName" resultType="com.example.core.domain.Admin">
+        SELECT *
+        FROM s_admin
+        WHERE name = #{name}
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into s_admin(name, passwd, uuid)
+        values (#{name}, #{passwd}, #{uuid})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into s_admin(name, passwd)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.name}, #{entity.passwd})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into s_admin(name, passwd)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.name}, #{entity.passwd})
+        </foreach>
+        on duplicate key update
+        name = values(name),
+        passwd = values(passwd)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update s_admin
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="passwd != null and passwd != ''">
+                passwd = #{passwd},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from s_admin where id = #{id}
+    </delete>
+
+</mapper>
+

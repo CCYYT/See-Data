@@ -1,0 +1,581 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.core.dao.DataTypeDao">
+
+    <resultMap type="com.example.core.domain.DataType" id="DataTypeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="dataType" column="data_type" jdbcType="VARCHAR"/>
+        <result property="dataUnit" column="data_unit" jdbcType="VARCHAR"/>
+        <result property="dataUnitSymbol" column="data_unit_symbol" jdbcType="VARCHAR"/>
+        <result property="dataMax" column="data_max" jdbcType="VARCHAR"/>
+        <result property="dataMin" column="data_min" jdbcType="VARCHAR"/>
+        <result property="chartSort" column="chart_sort" jdbcType="VARCHAR"/>
+        <result property="info" column="info" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="DataTypeMap">
+        select
+          id, data_type, data_unit, data_unit_symbol, data_max, data_min, chart_sort, info
+        from s_data_type
+        where id = #{id}
+    </select>
+
+       <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="DataTypeMap">
+        select
+          id, data_type, data_unit, data_unit_symbol, data_max, data_min, chart_sort, info
+        from s_data_type
+        <if test="pageInfo.fieldRule != null">
+        <where>
+            <foreach collection="pageInfo.fieldRule.entrySet()" item="fieldInfo" index="filedName">
+                <if test="fieldInfo.condition != null">
+                    <choose>
+                        <when test="filedName == 'id'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND id IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND id = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        id LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND id >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= id
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'dataType'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND data_type IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND data_type = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        data_type LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND data_type >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= data_type
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'dataUnit'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND data_unit IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND data_unit = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        data_unit LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND data_unit >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= data_unit
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'dataUnitSymbol'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND data_unit_symbol IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND data_unit_symbol = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        data_unit_symbol LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND data_unit_symbol >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= data_unit_symbol
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'dataMax'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND data_max IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND data_max = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        data_max LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND data_max >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= data_max
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'dataMin'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND data_min IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND data_min = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        data_min LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND data_min >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= data_min
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'chartSort'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND chart_sort IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                    AND chart_sort = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        chart_sort LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND chart_sort >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= chart_sort
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'info'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND info IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND info = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        info LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND info >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= info
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                    </choose>
+                </if>
+            </foreach>
+            </where>
+        </if>
+        <if test="pageInfo.sortList.size()>0">
+        ORDER BY
+            <foreach collection="pageInfo.sortList.entrySet()" item="sort" index="filedName" separator=",">
+            <choose>
+                <when test="filedName == 'id'">
+                    id ${sort}
+                </when>
+                <when test="filedName == 'dataType'">
+                    data_type ${sort}
+                </when>
+                <when test="filedName == 'dataUnit'">
+                    data_unit ${sort}
+                </when>
+                <when test="filedName == 'dataUnitSymbol'">
+                    data_unit_symbol ${sort}
+                </when>
+                <when test="filedName == 'dataMax'">
+                    data_max ${sort}
+                </when>
+                <when test="filedName == 'dataMin'">
+                    data_min ${sort}
+                </when>
+                <when test="filedName == 'info'">
+                    info ${sort}
+                </when>
+            </choose>
+            </foreach>
+        </if>
+        limit #{pageInfo.offset}, #{pageInfo.pageSize}
+    </select>
+
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from s_data_type
+        <if test="pageInfo.fieldRule != null">
+        <where>
+            <foreach collection="pageInfo.fieldRule.entrySet()" item="fieldInfo" index="filedName">
+                <if test="fieldInfo.condition != null">
+                    <choose>
+                        <when test="filedName == 'id'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND id IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND id = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        id LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND id >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= id
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'dataType'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND data_type IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND data_type = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        data_type LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND data_type >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= data_type
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'dataUnit'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND data_unit IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND data_unit = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        data_unit LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND data_unit >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= data_unit
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'dataUnitSymbol'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND data_unit_symbol IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND data_unit_symbol = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        data_unit_symbol LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND data_unit_symbol >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= data_unit_symbol
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'dataMax'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND data_max IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND data_max = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        data_max LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND data_max >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= data_max
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'dataMin'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND data_min IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND data_min = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        data_min LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND data_min >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= data_min
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                        <when test="filedName == 'info'">
+                            <choose>
+                                <when test="fieldInfo.condition.mode == 'in'">
+                                    AND info IN
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="," open="(" close=")">
+                                        #{value}
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'equal'">
+                                        AND info = #{fieldInfo.condition.value[0]}
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'like'">
+                                    AND
+                                    <foreach collection="fieldInfo.condition.value" item="value" separator="AND" open="(" close=")">
+                                        info LIKE "%"#{value}"%"
+                                    </foreach>
+                                </when>
+                                <when test="fieldInfo.condition.mode == 'range' and fieldInfo.condition.value.size()==2">
+                                    <if test="fieldInfo.condition.value[0] != 'null'">
+                                        AND info >= #{fieldInfo.condition.value[0]}
+                                    </if>
+                                    <if test="fieldInfo.condition.value[1] != 'null'">
+                                        AND #{fieldInfo.condition.value[1]} >= info
+                                    </if>
+                                </when>
+                            </choose>
+                        </when>
+                    </choose>
+                </if>
+            </foreach>
+            </where>
+        </if>
+
+    </select>
+    <!--通过dataType获取dataType对象-->
+    <select id="queryByDataType" resultType="com.example.core.domain.DataType">
+        select
+            id, data_type, data_unit, data_unit_symbol, data_max, data_min, chart_sort, info
+        from
+            s_data_type
+        where
+            data_type = #{data_type}
+    </select>
+    <!--查找dataType是否存在-->
+    <select id="dataTypeIsExist" resultType="java.lang.Boolean">
+        SELECT EXISTS (
+                       SELECT 0
+                       FROM s_data_type
+                       WHERE data_type = #{dataType}
+                   )
+    </select>
+
+    <!--查询所有数据-->
+    <select id="getAll" resultType="com.example.core.domain.DataType">
+        select
+            id, data_type, data_unit, data_unit_symbol, data_max, data_min, chart_sort, info
+        from
+            s_data_type
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into s_data_type(data_type, data_unit, data_unit_symbol, data_max, data_min, chart_sort, info)
+        values (#{dataType}, #{dataUnit}, #{dataUnitSymbol}, #{dataMax}, #{dataMin}, #{chartSort}, #{info})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into s_data_type(data_type, data_unit, data_unit_symbol, data_max, data_min, chart_sort, info)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.dataType}, #{entity.dataUnit}, #{entity.dataUnitSymbol}, #{entity.dataMax}, #{entity.dataMin}, #{entity.chartSort}, #{entity.info})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into s_data_type(data_type, data_unit, data_unit_symbol, data_max, data_min, info)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.dataType}, #{entity.dataUnit}, #{entity.dataUnitSymbol}, #{entity.dataMax}, #{entity.dataMin}, #{entity.info})
+        </foreach>
+        on duplicate key update
+        data_type = values(data_type),
+        data_unit = values(data_unit),
+        data_unit_symbol = values(data_unit_symbol),
+        data_max = values(data_max),
+        data_min = values(data_min),
+        info = values(info)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update s_data_type
+        <set>
+            <if test="dataType != null and dataType != ''">
+                data_type = #{dataType},
+            </if>
+            <if test="dataUnit != null and dataUnit != ''">
+                data_unit = #{dataUnit},
+            </if>
+            <if test="dataUnitSymbol != null and dataUnitSymbol != ''">
+                data_unit_symbol = #{dataUnitSymbol},
+            </if>
+            <if test="dataMax != null and dataMax != ''">
+                data_max = #{dataMax},
+            </if>
+            <if test="dataMin != null and dataMin != ''">
+                data_min = #{dataMin},
+            </if>
+            <if test="chartSort != null and chartSort != ''">
+                chart_sort = #{chartSort},
+            </if>
+            <if test="info != null and info != ''">
+                info = #{info},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from s_data_type where id = #{id}
+    </delete>
+
+</mapper>
+

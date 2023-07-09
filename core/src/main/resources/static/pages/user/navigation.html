@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../../plugins/vue.js"></script>
+    <script src="../../plugins/elementUi/index.js"></script>
+    <link rel="stylesheet" href="../../plugins/elementUi/index.css">
+    <style>
+        .el-menu-vertical-demo:not(.el-menu--collapse) {
+            width: 200px;
+            min-height: 400px;
+        }
+        .el-header{
+            margin-bottom: 10px;
+            border-radius: 10px;
+            box-shadow: 1px 1px 5px #ada7a7;
+            background: linear-gradient(5deg, #fff1d2 , #6de7b269,#ffd4d4);
+            text-align: center;
+        }
+        .el-main{
+            border-radius: 10px;
+            background-color: rgb(235 235 235 / 85%);
+            padding: 0px;
+        }
+        .el-aside{
+            margin-right: 7px;
+            border-radius: 10px;
+            box-shadow: 1px 1px 5px #bdbbbb;
+        }
+        .el-footer{
+            margin-top: 8px;
+            border-radius: 10px;
+            background-color: #8c939d;
+            text-align: center;
+            box-shadow: 1px 1px 5px #ada7a7;
+        }
+
+        #main-iframe{
+            width: 99%;
+            height: 100vh;
+            border: 0px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <el-container style="height: 100vh">
+        <el-header >
+            HeaderUser
+        </el-header>
+        <el-container>
+            <el-aside style="width: auto">
+                <el-menu default-active="1-4-1" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose" :collapse="isCollapse">
+                    <el-menu-item index="0" @click="isCollapse = !isCollapse">
+                        <i v-show="isCollapse" class="el-icon-s-fold"></i>
+                        <i v-show="!isCollapse" class="el-icon-s-unfold"></i>
+                        <template slot="title">
+                            <span slot="title">导航</span>
+                        </template>
+                    </el-menu-item>
+                    <el-menu-item index="1" @click="mainIframeUrl = './home.html'">
+                        <i class="el-icon-s-home"></i>
+                        <template slot="title">
+                            <span slot="title">首页</span>
+                        </template>
+                    </el-menu-item>
+
+                    <el-submenu index="2">
+                        <template slot="title">
+                            <i class="el-icon-location"></i>
+                            <span slot="title">用户组</span>
+                        </template>
+                        <el-menu-item index="2-1">数据统计</el-menu-item>
+                        <el-menu-item index="2-2" @click="mainIframeUrl = 'admin/group.html'">用户组</el-menu-item>
+                    </el-submenu>
+
+                    <el-submenu index="3">
+                        <template slot="title">
+                            <i class="el-icon-menu"></i>
+                            <span slot="title">用户</span>
+                        </template>
+                        <el-menu-item index="3-1">数据统计</el-menu-item>
+                        <el-menu-item index="3-2" @click="mainIframeUrl = 'admin/user.html'">用户</el-menu-item>
+                    </el-submenu>
+
+                    <el-submenu index="4">
+                        <template slot="title">
+                            <i class="el-icon-menu"></i>
+                            <span slot="title">区域</span>
+                        </template>
+                        <el-menu-item index="4-1">数据统计</el-menu-item>
+                        <el-menu-item index="4-2" @click="mainIframeUrl = 'admin/area.html'">区域</el-menu-item>
+                    </el-submenu>
+                    <el-submenu index="5">
+                        <template slot="title">
+                            <i class="el-icon-setting"></i>
+                            <span slot="title">设备管理</span>
+                        </template>
+                        <el-menu-item index="5-1" @click="mainIframeUrl = '../device/deviceChart.html'">数据统计</el-menu-item>
+                        <el-menu-item index="5-2" @click="mainIframeUrl = 'device/device.html'">设备</el-menu-item>
+                        <el-menu-item index="5-3" @click="mainIframeUrl = 'device/deviceType.html'">设备类型</el-menu-item>
+                        <el-menu-item index="5-3" @click="mainIframeUrl = 'device/deviceData.html'">设备数据</el-menu-item>
+                    </el-submenu>
+                </el-menu>
+            </el-aside>
+            <el-container>
+                <el-main>
+                    <iframe id="main-iframe" :src="mainIframeUrl" ref="iframe"></iframe>
+                </el-main>
+                <el-footer>Footer</el-footer>
+            </el-container>
+
+        </el-container>
+
+    </el-container>
+
+
+</div>
+<script>
+    Vue.config.productionTip = false;
+    new Vue({
+        el:'#app',
+        data:{
+            isCollapse: true,
+            mainIframeUrl:"../device/deviceChart.html"
+        },
+        methods: {
+            handleOpen(key, keyPath) {
+                console.log(key, keyPath);
+            },
+            handleClose(key, keyPath) {
+                console.log(key, keyPath);
+            },
+            formatter(row, column) {
+                return row.address;
+            },
+            // routeUrl(url){
+            //     switch (url){
+            //         case "deviceChart":
+            //             this.mainIframeUrl = "../device/deviceChart.html";
+            //             break;
+            //     }
+            // }
+        }
+    })
+</script>
+</body>
+</html>

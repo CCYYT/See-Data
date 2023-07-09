@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../../plugins/vue.js"></script>
+    <script src="../../plugins/elementUi/index.js"></script>
+    <link rel="stylesheet" href="../../plugins/elementUi/index.css">
+    <style>
+        /*.el-row{*/
+        /*    background-color: #8cc5ff;*/
+        /*}*/
+        /*.el-col{*/
+        /*    background-color: #5daf34;*/
+        /*}*/
+
+        /*.bg-purple {*/
+        /*    background: #d3dce6;*/
+        /*}*/
+
+        /*.grid-content {*/
+        /*    border-radius: 4px;*/
+        /*    min-height: 36px;*/
+        /*}*/
+        .el-col div{
+            margin-top: 50px;
+            height: 100px;
+            background-color: #8cc5ff;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <el-row :gutter="20">
+        <el-col>
+            <div>XXX 所属用户组XXX</div>
+        </el-col>
+    </el-row>
+    <el-row :gutter="20">
+        <div>区域
+<!--        <el-col :md="8">-->
+
+<!--        </el-col>-->
+
+        <el-col :md="8">
+            <div>设备</div>
+        </el-col>
+
+        <el-col :md="8">
+            <div>警报</div>
+        </el-col>
+        </div>
+    </el-row>
+</div>
+<script>
+    Vue.config.productionTip = false;
+    new Vue({
+        el:'#app',
+        data:{
+
+        },
+        methods: {
+        }
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <!-- 页面meta -->
+
+  <meta charset="utf-8">
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>设备类型</title>
+
+  <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+
+  <!-- 引入样式 -->
+
+  <link rel="stylesheet" href="../../plugins/elementUi/index.css">
+  <style>
+    #app{
+      /*margin: 10px 25px;*/
+      box-shadow: 1px 2px 5px #d3cece;
+      width:96vw;
+      background-color: white;
+      padding: 1px 25px;
+    }
+  </style>
+
+</head>
+
+<body class="hold-transition" >
+
+<div id="app">
+
+  <div class="content-header">
+
+    <h1>设备数据类型</h1>
+
+  </div>
+
+  <div class="app-container">
+
+    <div class="box">
+
+      <div class="filter-container">
+
+        <el-collapse-transition>
+          <div v-show="!dialogFormVisibleSearch">
+            <el-input placeholder="id" v-model="page.fieldRule.id.condition.value[0]" style="width: 200px;" class="filter-item"
+                      @keyup.enter.native='getById()'
+                      clearable
+            ></el-input>
+
+            <el-button @click='getById()' class="dalfBut">查询</el-button>
+
+            <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
+
+            <el-button type="primary" class="butT" @click="dialogFormVisibleSearch = !dialogFormVisibleSearch">高级查询</el-button>
+          </div>
+        </el-collapse-transition>
+            <el-collapse-transition>
+              <div v-show="dialogFormVisibleSearch">
+                <el-divider></el-divider>
+                <el-form ref="dataSearchForm" label-position="right" label-width="100px">
+
+                  <el-row :gutter="10">
+
+                    <el-col :span="25">
+
+                      <el-form-item label="id">
+
+                        <el-input v-model="page.fieldRule.id.condition.value[0]" clearable/>
+
+                      </el-form-item>
+
+                    </el-col>
+
+                    <el-col :span="25">
+
+                      <el-checkbox v-model="page.fieldRule.id.condition.mode" label="模糊查询"
+                                   true-label="like" false-label="equal"
+                                   border></el-checkbox>
+
+                    </el-col>
+                    <el-col :span="25">
+                      <el-form-item label="字段排序">
+                        <el-radio-group v-model="page.fieldRule.id.sort">
+                          <el-radio label="asc" style="margin-right: 0px" border>升序</el-radio>
+                          <el-radio label="desc" border>降序</el-radio>
+                        </el-radio-group>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+
+                  <el-row :gutter="10">
+
+                    <el-col :span="25">
+
+                      <el-form-item label="设备数据类型">
+
+                        <el-input v-model="page.fieldRule.dataType.condition.value[0]" clearable/>
+
+                      </el-form-item>
+
+                    </el-col>
+
+                    <el-col :span="25">
+                      <el-checkbox v-model="page.fieldRule.dataType.condition.mode" label="模糊查询"
+                                   true-label="like" false-label="equal"
+                                   border></el-checkbox>
+                    </el-col>
+
+                    <el-col :span="25">
+                      <el-form-item label="字段排序">
+                        <el-radio-group v-model="page.fieldRule.dataType.sort">
+                          <el-radio label="asc" style="margin-right: 0px" border>升序</el-radio>
+                          <el-radio label="desc" border>降序</el-radio>
+                        </el-radio-group>
+                      </el-form-item>
+                    </el-col>
+
+                  </el-row>
+
+
+                  <el-row>
+                    <el-form-item>
+                      <el-button @click="dialogFormVisibleSearch = false">取消</el-button>
+
+                      <el-button type="primary" @click="handleSearch()">查询</el-button>
+                    </el-form-item>
+                  </el-row>
+
+                </el-form>
+
+                <el-divider></el-divider>
+              </div>
+            </el-collapse-transition>
+
+      </div>
+
+      <el-table size="small" current-row-key="id"
+                :data="content"
+                stripe highlight-current-row>
+
+        <el-table-column prop="id" label="id" align="center"></el-table-column>
+
+        <el-table-column prop="dataType" label="设备数据类型字段" align="center" sortable></el-table-column>
+        <el-table-column prop="dataUnit" label="数据单位" align="center" sortable></el-table-column>
+        <el-table-column prop="dataUnitSymbol" label="数据单位符号" align="center" sortable></el-table-column>
+        <el-table-column prop="dataMax" label="数据最大值" align="center" sortable></el-table-column>
+        <el-table-column prop="dataMin" label="数据最小值" align="center" sortable></el-table-column>
+        <el-table-column prop="chartSort" label="图表类型" align="center" :formatter="formatChartSort" sortable></el-table-column>
+        <el-table-column prop="info" label="类型描述" align="center" sortable></el-table-column>
+
+        <el-table-column label="操作" align="center">
+
+          <template slot-scope="scope">
+
+            <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+
+            <el-button type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+
+          </template>
+
+        </el-table-column>
+
+      </el-table>
+
+      <!--分页主键-->
+      <div>
+        <el-pagination
+                @size-change="handleSizeChange"
+                @current-change="getPage"
+                :current-page="page.page+1"
+                :page-sizes="[10, 20, 50, 100]"
+                :page-size="page.pageSize"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="page.totalElementNum">
+        </el-pagination>
+      </div>
+
+
+      <!-- 新增标签弹层 -->
+      <div class="add-form">
+
+        <el-dialog title="添加" :visible.sync="dialogFormVisibleAdd">
+
+          <el-form ref="dataAddForm" :model="formData" :rules="rules" label-position="right" label-width="100px">
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="设备数据类型" prop="dataType">
+
+                  <el-input v-model="formData.dataType"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="数据单位" prop="dataUnit">
+
+                  <el-input v-model="formData.dataUnit"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="数据单位符号" prop="dataUnitSymbol">
+
+                  <el-input v-model="formData.dataUnitSymbol"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="数据最大值" prop="dataMax">
+
+                  <el-input v-model="formData.dataMax"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="数据最小值" prop="dataMin">
+
+                  <el-input v-model="formData.dataMin"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="图表类型" prop="chartSort">
+
+                  <el-select v-model="formData.chartSort"
+                             placeholder="图表类型">
+                    <el-option
+                            v-for="item in chartSortOptions"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                    </el-option>
+                  </el-select>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="类型描述" prop="info">
+
+                  <el-input v-model="formData.info"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+          </el-form>
+
+          <div slot="footer" class="dialog-footer">
+
+            <el-button @click="dialogFormVisibleAdd = false">取消</el-button>
+
+            <el-button type="primary" @click="handleAdd('dataAddForm')">确定</el-button>
+
+          </div>
+
+        </el-dialog>
+
+      </div>
+
+      <!-- 编辑标签弹层 -->
+      <div class="add-form">
+
+        <el-dialog title="编辑检查项" :visible.sync="dialogFormVisibleEdit">
+
+          <el-form ref="dataEditForm" :model="formData" :rules="rules" label-position="right" label-width="100px">
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="设备数据类型" prop="dataType">
+
+                  <el-input v-model="formData.dataType"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="数据单位" prop="dataUnit">
+
+                  <el-input v-model="formData.dataUnit"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="数据单位符号" prop="dataUnitSymbol">
+
+                  <el-input v-model="formData.dataUnitSymbol"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="数据最大值" prop="dataMax">
+
+                  <el-input v-model="formData.dataMax"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="数据最小值" prop="dataMin">
+
+                  <el-input v-model="formData.dataMin"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="图表类型" prop="chartSort">
+
+                  <el-select v-model="formData.chartSort"
+                             placeholder="图表类型">
+                    <el-option
+                            v-for="item in chartSortOptions"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                    </el-option>
+                  </el-select>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+            <el-row>
+
+              <el-col :span="12">
+
+                <el-form-item label="类型描述" prop="info">
+
+                  <el-input v-model="formData.info"/>
+
+                </el-form-item>
+
+              </el-col>
+
+            </el-row>
+
+          </el-form>
+
+          <div slot="footer" class="dialog-footer">
+
+            <el-button @click="dialogFormVisibleEdit = false">取消</el-button>
+
+            <el-button type="primary" @click="handleEdit('dataEditForm')">确定</el-button>
+
+          </div>
+
+        </el-dialog>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+
+<!-- 引入组件库 -->
+
+<script src="../../plugins/vue.js"></script>
+<script src="../../plugins/elementUi/index.js"></script>
+<script src="../../plugins/axios-0.18.0.js"></script>
+<script src="../../js/FieldDetectionUtil.js"></script>
+<script src="../../js/RequestCommonUtil.js"></script>
+<script src="../../js/FormatUtil.js"></script>
+<script src="../../js/TipCommonUtil.js"></script>
+
+<script>
+  Vue.config.productionTip = false;
+  var vue = new Vue({
+    el: '#app',
+    data:{
+      dialogFormVisibleAdd: false,
+      dialogFormVisibleEdit: false,
+      dialogFormVisibleSearch: false,
+      page: {
+        fieldRule:{
+          id:{
+            condition:{
+              value:[""],
+              mode:"equal"
+            }
+          },
+          dataType:{
+            condition:{
+              value:[""],
+              mode:"equal"
+            }
+          },
+          dataUnit:{
+            condition:{
+              value:[""],
+              mode:"equal"
+            }
+          },
+          info:{
+            condition:{
+              value:[""],
+              mode:"like"
+            }
+          }
+        },
+        page: 0, //当前页码
+        pageSize: 10 //每页大小
+      },//分页查询条件
+      content:[], //数据正文
+      formData: {},//表单数据
+      chartSortOptions:[
+        {label:"面积图",value:"basicArea"},
+        {label:"气温仪表图",value:"gaugeTemperatureOption"},
+      ],
+      rules: {//校验规则
+        dataType: [{ required: true, message: '设备数据类型为必填项', trigger: 'blur' }],
+        dataMax: [{ required: true, message: '设备数据最大值为必填项', trigger: 'blur' }],
+        dataMin: [{ required: true, message: '设备数据最小值为必填项', trigger: 'blur' }],
+        chartSort: [{ required: true, message: '图表类型为必填项', trigger: 'blur' }]
+      }
+    },
+
+    //钩子函数，VUE对象初始化完成后自动执行
+    created() {
+      this.getPage(1);
+      //开启通用提示框功能
+      commonRequestEnableTip(this);
+    },
+    methods: {
+      formatDate(row,column){
+        return formatDate(row[column.property]);
+      },
+      formatChartSort(row,column){
+        return formatChartSort(row[column.property]);
+      },
+      //列表
+      getPage(pageNum) {
+        // 调用通用分页请求
+        commonGetPageRequest("/dataType/query", pageNum, this.page,
+        (res)=>{
+            this.content = res.data.content;
+            this.page.totalPagesNum = res.data.totalPagesNum;
+            this.page.totalElementNum = res.data.totalElementNum;
+        },
+        (err)=>{
+            console.log(err.response);
+        });
+      },
+      //设置每一页显示多少数据
+      handleSizeChange(val) {
+        this.page.pageSize = val;
+        this.getPage(1);
+        // console.log(`每页 ${val} 条`);
+      },
+
+      getById(){
+        var id = this.page.fieldRule.id;
+        this.initPageFieldRule();
+        this.page.fieldRule.id = id;
+        this.getPage(1);
+      },
+
+      /**
+       * 高级搜索
+       * 将search里的条件 填充到page里
+      * */
+      handleSearch(){
+        this.getPage(1);
+      },
+
+      /**
+       * 初始化this.page
+       * */
+      initPageFieldRule(){
+        this.page.fieldRule = {
+          id:{
+            condition:{
+              value:[""],
+              mode:"equal"
+            }
+          },
+          dataType:{
+            condition:{
+              value:[""],
+              mode:"equal"
+            }
+          },
+          dataUnit:{
+            condition:{
+              value:[""],
+              mode:"equal"
+            }
+          },
+          info:{
+            condition:{
+              value:[""],
+              mode:"like"
+            }
+          }
+        }
+      },
+
+      //弹出添加窗口
+      handleCreate() {
+        this.dialogFormVisibleAdd = true;
+        this.formData = {};
+      },
+      //添加
+      handleAdd (formName) {
+        // 表单验证
+        this.$refs[formName].validate((valid) => {
+          if(valid){
+            commonAddRequest("/dataType",this.formData,
+                    (res)=>{
+                      this.dialogFormVisibleAdd = false;
+                    }, (err)=>{console.log(err)},
+                    ()=>{
+                      this.getPage(this.page.page+1);
+                    });
+          }else {
+            commonErrorTip("表单消息有误");
+          }
+        })
+      },
+
+      //弹出编辑窗口
+      handleUpdate(row) {
+        commonQuerySingleResult("/dataType/"+row.id,
+                (res)=>{
+                  this.formData = res.data.data;
+                  this.dialogFormVisibleEdit = true;
+                },
+                (res)=>{});
+      },
+
+      //编辑
+      handleEdit(formName) {
+        // 表单验证
+        this.$refs[formName].validate((valid) => {
+          if(valid){
+            commonEditRequest("/dataType", this.formData,
+                    (res)=>{
+                      this.dialogFormVisibleEdit = false;
+                    },(err)=>{},
+                    ()=>{
+                      this.getPage(this.page.page+1);
+                    })
+          }else {
+            commonErrorTip("表单消息有误");
+          }
+        })
+      },
+
+      // 删除
+      handleDelete(row) {
+        commonDeleteRequest("/dataType/"+row.id,()=>{},(err)=>{},
+                ()=>{
+                  this.getPage(this.page.page+1);
+                });
+      }
+    }
+  })
+
+</script>
+
+</html>
